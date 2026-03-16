@@ -159,23 +159,6 @@ Return ONLY valid JSON:
     "thumbnail_subtitle": "..."
 }}
 """
-
-For LONG-FORM:
-{{
-    "title": "What Your Brain Actually Does While You Sleep (The Science Changed Everything)",
-    "description": "full SEO description with timestamps and sources...",
-    "script": "1600-2200 word deep dive script...",
-    "sfx_timeline": [...],
-    "pinned_comment": "...",
-    "playlist": "body_science or food_science",
-    "source_citations": [...],
-    "seo_keywords": "...",
-    "thumbnail_text": "WHAT YOUR BRAIN DOES AT 3AM",
-    "thumbnail_subtitle": "the science changed everything",
-    "pexels_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
-    "word_count": approximate_integer
-}}
-"""
     return prompt
 
 
@@ -418,7 +401,7 @@ def fix_description(description: str) -> str:
     """Fixes line breaks in description."""
     if not description:
         return description
-    markers = ["", "", "", "", "", "", "", "", "",
+    markers = ["🔔", "⚠️", "🤖", "📚", "💡", "💬", "📺", "🎬", "📌",
                "{{CREDITS_PLACEHOLDER}}", "we share the science"]
     for m in markers:
         if m in description:
