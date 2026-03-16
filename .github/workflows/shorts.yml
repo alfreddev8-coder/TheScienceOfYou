@@ -1,0 +1,47 @@
+name: TheScienceOfYou Shorts
+on:
+  schedule:
+    - cron: '0 9 * * *'   # 9 AM UTC daily
+    - cron: '0 14 * * *'  # 2 PM UTC daily
+  workflow_dispatch:
+
+jobs:
+  create-shorts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg imagemagick
+          # Fix ImageMagick security policy for moviepy
+          sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
+      
+      - name: Install Python deps
+        run: |
+          pip install -r requirements.txt
+          pip install yt-dlp
+      
+      - name: Create Shorts
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
+        run: python main.py batch_shorts
+      
+      - name: Commit tracking files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          for f in data/used_topics.json data/used_kuaishou_videos.json data/used_music.json data/video_database.json data/sfx_manifest.json data/pending_series.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update tracking [Shorts]"
+          git push || echo "Nothing to push"

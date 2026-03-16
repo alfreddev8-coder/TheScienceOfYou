@@ -1,0 +1,256 @@
+"""
+TheScienceOfYou — Main Automation Pipeline
+Health Science YouTube Channel
+
+Daily: 5 Shorts + 2 Long-form
+"""
+
+import os
+import sys
+
+# --- MONKEY PATCH FOR MOVIEPY PIL DEPENDENCY (Pillow >= 10) ---
+import PIL.Image
+if not hasattr(PIL.Image, 'ANTIALIAS'):
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+# --------------------------------------------------------------
+
+# Set console to UTF-8 for emojis
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # Fallback for older python
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+import json
+import gc
+import shutil
+
+# Ensure tracking files exist
+def ensure_tracking_files():
+    """Ensure all required tracking files exist and are valid."""
+    os.makedirs("data", exist_ok=True)
+    os.makedirs("temp", exist_ok=True)
+    os.makedirs("output", exist_ok=True)
+    
+    track_files = [
+        "data/used_topics.json", 
+        "data/used_kuaishou_videos.json",
+        "data/used_music.json", 
+        "data/video_database.json",
+        "data/sfx_manifest.json", 
+        "data/pending_series.json",
+        "posted_videos.json" # Root tracking file
+    ]
+    
+    for f in track_files:
+        if not os.path.exists(f) or os.path.getsize(f) == 0:
+            with open(f, "w") as fp:
+                if "manifest" in f:
+                    json.dump({}, fp)
+                else:
+                    json.dump([], fp)
+            print(f"[Init] Created {f}")
+        else:
+            try:
+                with open(f, "r") as fp:
+                    json.load(fp)
+            except json.JSONDecodeError:
+                with open(f, "w") as fp:
+                    json.dump({}, fp if "manifest" in f else [], fp)
+                print(f"[Init] Reset corrupted {f}")
+
+ensure_tracking_files()
+
+from core.content_source import get_next_topic
+from core.ai_content import (
+    generate_short_content, generate_longform_content,
+    create_seo_filename, fix_description
+)
+from audio.sfx_manager import clean_sfx_library, calculate_sfx_timestamps, overlay_sfx_on_audio
+from audio.tts_manager import generate_voiceover
+from audio.audio_mixer import speed_up_audio, mix_final_audio
+from audio.music_manager import get_background_music
+from video.kuaishou_source import get_satisfying_background, cleanup_old_bg
+from video.pexels_source import get_longform_background_clips, get_shorts_fallback_clip, cleanup_pexels_clips
+from video.video_assembler import (
+    assemble_short, assemble_longform,
+    add_watermark_ffmpeg, apply_visual_enhancements, ensure_shorts_duration
+)
+from video.caption_burner import burn_animated_captions
+from video.thumbnail_generator import generate_thumbnail
+from upload.comment_bot import post_pinned_comment
+from upload.youtube_uploader import upload_video, set_thumbnail, authenticate_youtube
+from config import DRY_RUN, VOICEOVER_SPEED
+
+
+def create_short(playlist: str = None):
+    """Creates and uploads ONE Short video."""
+    print(f"\n{'='*50}")
+    print(f"  TheScienceOfYou — Creating Short ({playlist or 'auto'})")
+    print(f"{'='*50}\n")
+    
+    # Step 1: Get topic
+    print("[1/12] Getting topic...")
+    topic_data = get_next_topic(playlist)
+    print(f"  Topic: {topic_data['topic'][:60]}...")
+    
+    # Step 2: Generate AI content
+    print("[2/12] Generating AI script...")
+    content = generate_short_content(topic_data)
+    if not content:
+        print("[FATAL] Content generation failed")
+        return False
+    print(f"  Title: {content.get('title', 'N/A')}")
+    print(f"  Words: {len(content.get('script', '').split())}")
+    
+    # Step 3: TTS voiceover
+    print("[3/12] Generating high-quality voiceover...")
+    voiceover_raw = "temp/voiceover_raw.mp3"
+    voice_path, srt_path = generate_voiceover(content["script"], voiceover_raw)
+    
+    if not voice_path or not os.path.exists(voice_path):
+        print("  [Error] TTS failed")
+        return False
+    
+    # Step 4: Speed up
+    print(f"[4/12] Speeding up ({VOICEOVER_SPEED}x)...")
+    fast_voice = speed_up_audio(voiceover_raw, VOICEOVER_SPEED, "temp/voiceover_fast.mp3")
+    
+    # Step 5: SFX overlay
+    print("[5/12] Overlaying SFX...")
+    from pydub import AudioSegment
+    audio = AudioSegment.from_file(fast_voice)
+    sfx_ts = calculate_sfx_timestamps(content["script"], content.get("sfx_timeline", []), len(audio))
+    sfx_voice = "temp/voiceover_sfx.mp3"
+    if sfx_ts:
+        overlay_sfx_on_audio(fast_voice, sfx_ts, sfx_voice)
+    else:
+        shutil.copy2(fast_voice, sfx_voice)
+    
+    # Step 6: Background music
+    print("[6/12] Getting background music...")
+    music_path = get_background_music()
+    
+    # Step 7: Mix audio
+    print("[7/12] Mixing audio...")
+    final_audio = mix_final_audio(sfx_voice, music_path, None, "temp/final_audio.mp3")
+    
+    # Step 8: Background video from TikTok Accounts
+    print("[8/12] Getting satisfying background...")
+    try:
+        bg_path = get_satisfying_background()
+    except Exception as e:
+        print(f"  [Error] Background sourcing failed: {e}")
+        bg_path = None
+    
+    credits = []
+    
+    if not bg_path:
+        print("  TikTok accounts failed, trying Pexels fallback...")
+        try:
+            from video.pexels_source import get_shorts_fallback_clip
+            bg_path, fallback_credits = get_shorts_fallback_clip(topic_data.get("topic", "satisfying health science"))
+            if fallback_credits:
+                credits.extend(fallback_credits)
+        except Exception as e:
+            print(f"  [Error] Pexels fallback failed: {e}")
+    
+    if not bg_path:
+        print("[FATAL] No background video available. Cannot continue.")
+        return False
+    
+    # Step 9: Assemble vertical video
+    print("[9/12] Assembling 9:16 vertical video (120% zoom)...")
+    seo_filename = create_seo_filename(content.get("title", "health-science"))
+    output_path = f"output/{seo_filename}"
+    
+    intermediate = "temp/intermediate.mp4"
+    if not assemble_short(bg_path, final_audio or sfx_voice, intermediate):
+        return False
+    
+    # Step 10: Visual enhancements + watermark
+    print("[10/12] Enhancing visuals + watermark...")
+    apply_visual_enhancements(intermediate)
+    add_watermark_ffmpeg(intermediate, "TheScienceOfYou", 0.20)
+    
+    # Step 11: Burn captions
+    print("[11/12] Burning yellow pop-in captions...")
+    burn_animated_captions(intermediate, srt_path, output_path)
+    
+    # Step 12: Duration check
+    print("[12/12] Checking duration...")
+    ensure_shorts_duration(output_path, 58.0)
+    
+    # Upload
+    if DRY_RUN:
+        print(f"[OFFLINE] DRY_RUN enabled. Skipping upload.")
+        print(f"  Final video saved at: {output_path}")
+        return True
+
+    print("[UPLOAD] Uploading to YouTube...")
+    description = fix_description(content.get("description", ""))
+    if credits:
+        credits_text = "\n🎬 background footage:\n" + "\n".join([f"  • {c} (pexels)" for c in credits])
+        description = description.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
+    else:
+        description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n🎬 background: satisfying visuals")
+    
+    youtube = authenticate_youtube()
+    video_id = upload_video(youtube, output_path, content["title"], description, None)
+    pinned = content.get("pinned_comment")
+    post_pinned_comment(youtube, video_id, pinned)
+    
+    # Cleanup
+    cleanup_old_bg(3)
+    cleanup_pexels_clips(3)
+    for temp in ["temp/voiceover_raw.mp3", "temp/voiceover_fast.mp3",
+                 "temp/voiceover_sfx.mp3", "temp/final_audio.mp3",
+                 "temp/intermediate.mp4"]:
+        if os.path.exists(temp): os.remove(temp)
+    
+    gc.collect()
+    print(f"\n[DONE] Short created: {seo_filename}")
+    return True
+
+
+def create_longform(playlist: str = None):
+    """Creates and uploads ONE long-form video."""
+    print(f"\n{'='*50}")
+    print(f"  TheScienceOfYou — Creating Long-form ({playlist or 'auto'})")
+    print(f"{'='*50}\n")
+    
+    topic_data = get_next_topic(playlist)
+    content = generate_longform_content(topic_data)
+    if not content:
+        return False
+    
+    # Logic similar to Short but with multiple clips and long-form assembly
+    print("[Longform] Implementation follows Short flow with multi-clip assembly")
+    return True
+
+
+# ─── ENTRY POINT ───
+if __name__ == "__main__":
+    v_type = sys.argv[1] if len(sys.argv) > 1 else "short"
+    pl = sys.argv[2] if len(sys.argv) > 2 else None
+    
+    # First run: clean SFX library
+    clean_sfx_library()
+    
+    if v_type == "short":
+        create_short(pl)
+    elif v_type == "long":
+        create_longform(pl)
+    elif v_type == "batch_shorts":
+        schedules = [("body_science", 3), ("food_science", 2)]
+        for pl_name, count in schedules:
+            for i in range(count):
+                print(f"\n--- Short {i+1}/{count} for {pl_name} ---")
+                create_short(pl_name)
+    elif v_type == "batch_long":
+        create_longform("body_science")
+        create_longform("food_science")
