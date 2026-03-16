@@ -207,7 +207,7 @@ REQUIREMENTS:
 9. 2-3 SFX in separate timeline.
 10. "..." pauses throughout for natural rhythm.
 11. One retention hook sprinkled in naturally.
-12. Connect to viewer's DAILY LIFE in the hook.
+12. Connect to viewers DAILY LIFE in the hook.
 13. All hashtags lowercase only.
 
 FINAL REMINDER: Count your words RIGHT NOW before responding.
