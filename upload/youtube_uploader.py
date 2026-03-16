@@ -109,11 +109,11 @@ def upload_video(youtube, filepath, title, description, playlist_id=None, privac
 PLAYLIST_INFO = {
     "body_science": {
         "title": "TheScienceOfYou: Body Science 🧬",
-        "description": "Daily facts about the human body, organ functions, and biological miracles. Your body is talking. We translate."
+        "description": "Ever wonder what happens inside your body? 🧬 We break down human biology, organ functions, and the miracles of the human body in simple daily facts. From heart health to brain science, we translate what your body is trying to tell you. Every fact is backed by scientific research. #bodyscience #biology #healthhacks"
     },
     "food_science": {
         "title": "TheScienceOfYou: Food Science 🍎",
-        "description": "The surprising science behind the food you eat and how it affects your body. Fact-backed health secrets."
+        "description": "The surprising science behind the food you eat! 🍎 Discover how nutrition, vitamins, and minerals actually affect your biological systems. We destroy health myths with actual research and breakdown the science of food to help you eat smarter. Your body is talking... we translated the menu. #foodscience #nutrition #healthyeating"
     }
 }
 

@@ -1,5 +1,5 @@
 """
-AI Content Generator — TheScienceOfYou
+AI Content Generator - TheScienceOfYou
 Generates health science scripts in the "Empathetic Science Authority" voice.
 """
 
@@ -50,7 +50,7 @@ def get_system_prompt(video_type: str = "short") -> str:
         )
     
     prompt = f"""
-RULE #1 — WORD COUNT (READ THIS FIRST):
+RULE #1 - WORD COUNT (READ THIS FIRST):
 Every Short script MUST be 195-220 words. NOT 150. NOT 160. NOT 175.
 Count your words. THE TARGET IS EXACTLY 210 WORDS.
 If you write fewer than 195 words you have FAILED.
@@ -67,7 +67,7 @@ You are a brilliant friend who just discovered something incredible about the hu
 - Authority of a science communicator (confident, deliberate, credible)
 - Warmth of an empathetic mentor (uses "we" and "our", acknowledges struggles)
 - Curiosity of a fellow learner (slightly awestruck by discoveries)
-- Calm delivery (not rushed, not slow — deliberate and clear)
+- Calm delivery (not rushed, not slow - deliberate and clear)
 
 === ENGAGEMENT HOOKS (Facts Man Style) ===
 
@@ -198,12 +198,12 @@ PLAYLIST: {playlist}
 REQUIREMENTS:
 1. Script MUST be 195-220 words EXACTLY.
 2. Follow the Empathetic Science Authority voice.
-3. Use "we" and "our" throughout — never preach.
+3. Use "we" and "our" throughout - never preach.
 4. Cite at least 1 specific study or source.
 5. Include a relatable analogy.
 6. End with engagement question 2 + indirect CTA (never say subscribe).
 7. Include health disclaimer naturally.
-8. Clean script — NO sound effect words or brackets.
+8. Clean script - NO sound effect words or brackets.
 9. 2-3 SFX in separate timeline.
 10. "..." pauses throughout for natural rhythm.
 11. One retention hook sprinkled in naturally.
