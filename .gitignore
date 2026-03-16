@@ -1,19 +1,29 @@
-.env
-temp/
-output/
-satisfying_bg_videos/
-tiktok_bg_videos/
-pexels_bg_clips/
-youtube_bg_videos/
-bg_music/
+# Temporary/Cache files
 __pycache__/
 *.pyc
-*.mp4
-*.mp3
-*.wav
-*.jpg
-*.png
-data/used_*.json
-data/status.json
-logs/
-*.log
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Media/Data
+temp/
+output/
+kuaishou_bg_videos/
+tiktok_bg_videos/
+pexels_bg_clips/
+data/used_topics.json
+data/pending_series.json
+
+# Credentials & Tokens (DO NOT REMOVE)
+token.json
+client_secrets.json
+service_account.json
+.env
+auth_token.json
+credentials.json
+*.json
+!data/questions_bank.json
+!posted_videos.json

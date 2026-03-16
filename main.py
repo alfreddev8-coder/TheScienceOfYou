@@ -200,7 +200,7 @@ def create_short(playlist: str = None):
         description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n🎬 background: satisfying visuals")
     
     youtube = authenticate_youtube()
-    video_id = upload_video(youtube, output_path, content["title"], description, None)
+    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="private")
     pinned = content.get("pinned_comment")
     post_pinned_comment(youtube, video_id, pinned)
     

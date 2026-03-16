@@ -7,6 +7,5 @@ pytrends
 yt-dlp
 edge-tts
 python-dotenv
-audioop-lts
 gspread
 oauth2client
