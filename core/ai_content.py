@@ -126,16 +126,16 @@ Available sound effects: {sfx_list}
 
 === TITLE GENERATION ===
 Curiosity-driven but warm. Lowercase hashtags at end.
-- "what [common food] actually does to our [organ] 🧬 #bodyscience #shorts"
+- "what [common food] actually does to our [organ]  #bodyscience #shorts"
 
 === DESCRIPTION ===
 SHORTS DESCRIPTION (literal newlines):
-[empathetic hook] 🧬
+[empathetic hook] 
 [what video covers keywords]
-[engagement question] 👇
-science of your body every single day 🔔
+[engagement question] 
+science of your body every single day 
 {CHANNEL_HANDLE}
-⚠️ educational purposes only. consult doctor.
+ educational purposes only. consult doctor.
 Robot voice generated. Original research and script.
 {{{{CREDITS_PLACEHOLDER}}}}
 [15-20 lowercase hashtags]
@@ -245,7 +245,7 @@ Return ONLY valid JSON.
         word_count = len(words)
         print(f"[AI] Script: {word_count} words")
 
-        # Too short — retry
+        # Too short - retry
         if word_count < 190:
             print(f"[AI] Too short ({word_count}). Retrying...")
             retry_msg = (
@@ -277,7 +277,7 @@ Return ONLY valid JSON.
             except Exception as e:
                 print(f"[AI] Retry failed: {e}")
 
-        # Too long — trim
+        # Too long - trim
         elif word_count > 225:
             print(f"[AI] Too long ({word_count}). Trimming...")
             trimmed_words = words[:220]
@@ -333,15 +333,15 @@ PLAYLIST: {playlist}
 
 REQUIREMENTS:
 1. Script MUST be 1600-2200 words (MINIMUM 1600)
-2. Follow exact long-form structure: Hook → Daily Life → Science Part 1 → Science Part 2 → What We Can Do → Bigger Picture → Close
+2. Follow exact long-form structure: Hook  Daily Life  Science Part 1  Science Part 2  What We Can Do  Bigger Picture  Close
 3. First 30 seconds must be MIND-BLOWING (determines if YouTube pushes it)
-4. Start with immediate shocking fact — NOT introduction
+4. Start with immediate shocking fact - NOT introduction
 5. Cite at least 5 specific studies/sources
 6. Use "we" and "our" throughout
 7. Include relatable analogies for every complex concept
 8. End with empowerment + community CTA
 9. Health disclaimer
-10. Clean script — no SFX words
+10. Clean script - no SFX words
 11. 8-12 SFX in timeline
 12. "..." pauses throughout
 13. Also generate 5 Pexels search keywords for background clips
@@ -418,7 +418,7 @@ def fix_description(description: str) -> str:
     """Fixes line breaks in description."""
     if not description:
         return description
-    markers = ["🔔", "⚠️", "🤖", "📚", "💡", "💬", "📺", "🎬", "📌",
+    markers = ["", "", "", "", "", "", "", "", "",
                "{{CREDITS_PLACEHOLDER}}", "we share the science"]
     for m in markers:
         if m in description:
