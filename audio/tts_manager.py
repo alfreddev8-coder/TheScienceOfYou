@@ -40,53 +40,57 @@ def format_srt_time(ms):
 
 
 async def _async_generate_voiceover(text, output_path, srt_path):
-    """Async TTS generation with word-level fallback."""
+    """Async TTS generation with strict word-level popping logic."""
     communicate = edge_tts.Communicate(text, TTS_VOICE)
     
-    words_data = [] # List of (word, start_ms, end_ms)
-    sentences_data = [] # List of (text, start_ms, end_ms)
+    words_raw = [] 
+    sentences_raw = []
 
     with open(output_path, "wb") as audio_file:
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 audio_file.write(chunk["data"])
             elif chunk["type"] == "WordBoundary":
-                # Convert 100ns units to ms
                 start_ms = chunk["offset"] // 10000
                 duration_ms = chunk["duration"] // 10000
-                words_data.append((chunk["text"], start_ms, start_ms + duration_ms))
+                words_raw.append((chunk["text"], start_ms, start_ms + duration_ms))
             elif chunk["type"] == "SentenceBoundary":
                 start_ms = chunk["offset"] // 10000
                 duration_ms = chunk["duration"] // 10000
-                sentences_data.append((chunk["text"], start_ms, start_ms + duration_ms))
+                sentences_raw.append((chunk["text"], start_ms, start_ms + duration_ms))
 
-    srt_lines = []
-    
-    # Use word data if available, else split sentences
+    # Priority: words_raw if not empty, else sentences_raw
+    source_data = words_raw if words_raw else sentences_raw
     final_data = []
-    if words_data:
-        final_data = words_data
-    elif sentences_data:
-        print("[TTS] No word boundaries found. Splitting sentences manually...")
-        for s_text, s_start, s_end in sentences_data:
-            s_words = s_text.split()
-            if not s_words: continue
+
+    if source_data:
+        for t_chunk, s_start, s_end in source_data:
+            clean_t = t_chunk.strip()
+            if not clean_t: continue
             
-            s_duration = s_end - s_start
-            # Distribute duration based on word length relative to total sentence length
-            total_chars = sum(len(w) for w in s_words)
-            current_ms = s_start
-            for w in s_words:
-                w_dur = (len(w) / total_chars) * s_duration
-                final_data.append((w, int(current_ms), int(current_ms + w_dur)))
-                current_ms += w_dur
+            # STRICT SPLIT: If a chunk is "But, have we", split into ["But,", "have", "we"]
+            bits = clean_t.split()
+            if len(bits) > 1:
+                dur = s_end - s_start
+                total_chars = sum(len(b) for b in bits)
+                curr = s_start
+                for b in bits:
+                    b_dur = (len(b) / total_chars) * dur
+                    final_data.append((b, int(curr), int(curr + b_dur)))
+                    curr += b_dur
+            else:
+                final_data.append((clean_t, s_start, s_end))
     else:
-        # Absolute last resort
-        print("[TTS] Warning: No timing data found at all.")
+        # Fallback for silent/failed data
+        print("[TTS] Warning: No timing data found. Using full duration fallback.")
         final_data = [(text, 0, 58000)]
 
-    # Generate SRT formatted content
+    # Generate SRT formatted content - strictly one word per entry
+    srt_lines = []
     for i, (w_text, w_start, w_end) in enumerate(final_data, 1):
+        # Prevent zero-length entries
+        if w_end <= w_start: w_end = w_start + 100
+        
         start_str = format_srt_time(w_start)
         end_str = format_srt_time(w_end)
         srt_lines.append(f"{i}\n{start_str} --> {end_str}\n{w_text}\n")
