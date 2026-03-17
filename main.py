@@ -200,7 +200,7 @@ def create_short(playlist: str = None):
         description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n background: satisfying visuals")
     
     youtube = authenticate_youtube()
-    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="private")
+    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="public")
     pinned = content.get("pinned_comment")
     post_pinned_comment(youtube, video_id, pinned)
     
@@ -309,7 +309,7 @@ def create_longform(playlist: str = None):
         description += "\n\nFootage Credits:\n" + "\n".join([f"- {c} (pexels)" for c in credits])
         
     youtube = authenticate_youtube()
-    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist)
+    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="public")
     
     # Step 13: Set Thumbnail
     if video_id and os.path.exists(thumb_path):

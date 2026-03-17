@@ -42,23 +42,28 @@ async def _async_generate_voiceover(text, output_path, srt_path):
                 audio_file.write(chunk["data"])
             elif chunk["type"] == "WordBoundary":
                 try:
-                    # edge-tts v7+ API
                     submaker.feed(chunk)
-                except TypeError:
-                    # edge-tts v6 API fallback
-                    submaker.create_sub(
-                        (chunk["offset"], chunk["duration"]),
-                        chunk["text"]
-                    )
+                except Exception:
+                    # Generic fallback within chunk loop
+                    pass
+            elif chunk["type"] == "SentenceBoundary":
+                # Fallback: if we only get sentences, treat them as points for submaker
+                # This ensures we at least have sentence-level captions
+                try:
+                    submaker.feed(chunk)
+                except Exception:
+                    pass
 
     # Write SRT - handle both API versions
     try:
         srt_content = submaker.get_srt()
-    except AttributeError:
-        try:
-            srt_content = submaker.generate_subs()
-        except Exception:
-            srt_content = ""
+    except Exception:
+        srt_content = ""
+
+    # Emergency Fallback: If SRT is still empty, create one giant block for the whole video
+    if not srt_content.strip():
+        print("[TTS] Warning: SRT still empty. Using single-block fallback.")
+        srt_content = f"1\n00:00:00,000 --> 00:00:58,000\n{text}\n"
 
     with open(srt_path, "w", encoding="utf-8") as srt_file:
         srt_file.write(srt_content)

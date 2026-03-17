@@ -43,9 +43,9 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginV, MarginR, Encoding
-Style: Default,Impact,36,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
-Style: Number,Impact,38,&H0000FF00,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
-Style: Organ,Impact,36,&H00FFD700,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
+Style: Default,DejaVu Sans,36,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
+Style: Number,DejaVu Sans,38,&H0000FF00,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
+Style: Organ,DejaVu Sans,36,&H00FFD700,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,60,40,60,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -147,7 +147,11 @@ def burn_animated_captions(video_path: str, srt_path: str, output_path: str) -> 
         return burn_basic_captions(video_path, srt_path, output_path)
     
     try:
+        # Cross-platform path escaping for FFmpeg filters
         ass_escaped = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
+        if os.name == 'nt':
+             # Windows needs absolute paths with forward slashes for the libav filters
+             ass_escaped = os.path.abspath(ass_path).replace("\\", "/").replace(":", "\\:")
         
         cmd = [
             "ffmpeg", "-i", video_path,
@@ -176,7 +180,7 @@ def burn_basic_captions(video_path: str, srt_path: str, output_path: str) -> boo
     """Fallback: basic styled captions."""
     try:
         style = (
-            "FontName=Impact,FontSize=36,PrimaryColour=&H0000FFFF,"
+            "FontName=DejaVu Sans,FontSize=36,PrimaryColour=&H0000FFFF,"
             "OutlineColour=&H00000000,Bold=1,Outline=4,Shadow=2,"
             "Alignment=5,MarginV=40,MarginL=60,MarginR=60"
         )
