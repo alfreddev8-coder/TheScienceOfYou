@@ -7,9 +7,10 @@ load_dotenv()
 # API Keys
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "")
+PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY", "")
 
-# Local Testing
-DRY_RUN = True  # Set to False to enable real uploads
+# DRY_RUN: reads from env var. Set GHA secret DRY_RUN=false to enable real uploads.
+DRY_RUN = os.environ.get("DRY_RUN", "true").lower() == "true"
 
 # YouTube OAuth (loaded from environment)
 YOUTUBE_TOKEN_JSON = os.environ.get("YOUTUBE_TOKEN_JSON", "")
