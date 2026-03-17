@@ -117,8 +117,8 @@ def create_short(playlist: str = None):
         return False
     
     # Step 4: Speed up
-    print(f"[4/12] Speeding up ({VOICEOVER_SPEED}x)...")
-    fast_voice = speed_up_audio(voiceover_raw, VOICEOVER_SPEED, "temp/voiceover_fast.mp3")
+    print(f"[4/12] Speeding up ({VOICEOVER_SPEED}x) & Scaling subtitles...")
+    fast_voice = speed_up_audio(voiceover_raw, VOICEOVER_SPEED, "temp/voiceover_fast.mp3", srt_path=srt_path)
     
     # Step 5: SFX overlay
     print("[5/12] Overlaying SFX...")
