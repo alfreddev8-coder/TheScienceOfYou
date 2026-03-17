@@ -80,7 +80,7 @@ def get_system_prompt(video_type="short"):
         "    \"script\": \"Clean 195-220 word script...\",\n"
         "    \"tags\": \"tag1, tag2, tag3... (20 viral keywords)\",\n"
         "    \"hashtags\": \"#h1 #h2 #h3... (15 hashtags)\",\n"
-        "    \"sfx_timeline\": [{\"sfx\": \"sfx_name\", \"timestamp_ms\": 5000}, ...],\n"
+        "    \"sfx_timeline\": [{\"sound\": \"sfx_name\", \"timestamp_ms\": 5000}, ...],\n"
         "    \"pinned_comment\": \"Engagement question...\",\n"
         "    \"playlist\": \"body_science or food_science\",\n"
         "    \"source_citations\": [...],\n"

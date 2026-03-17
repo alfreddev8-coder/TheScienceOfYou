@@ -271,7 +271,7 @@ def create_short(playlist: str = None):
     
     # Step 6: Background music
     print("[6/12] Getting background music...")
-    music_path = get_background_music(playlist)
+    music_path = get_background_music()
     
     # Step 7: Mix audio
     print("[7/12] Mixing audio...")
