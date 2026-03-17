@@ -325,8 +325,8 @@ def create_short(playlist: str = None):
     cleanup_old_bg(3)
     cleanup_pexels_clips(3)
     for temp in ["temp/voiceover_raw.mp3", "temp/voiceover_fast.mp3",
-                 "temp/voiceover_sfx.mp3", "temp/final_audio.mp3",
-                 "temp/intermediate.mp4"]:
+                 "temp/voiceover_sfx.mp3", "temp/final_audio_short.mp3",
+                 "temp/intermediate_short.mp4"]:
         if os.path.exists(temp): os.remove(temp)
     
     gc.collect()

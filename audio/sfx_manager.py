@@ -49,17 +49,22 @@ def overlay_sfx_on_audio(audio_path, sfx_data, output_path):
     try:
         voice = AudioSegment.from_file(audio_path)
         for sfx in sfx_data:
-            sfx_file = f"sfx/{sfx['sound']}.mp3"
+            sound_name = sfx.get('sound') or sfx.get('sfx')
+            if not sound_name:
+                continue
+                
+            sfx_file = f"sfx/{sound_name}.mp3"
             if os.path.exists(sfx_file):
                 effect = AudioSegment.from_file(sfx_file)
                 # Adjust volume
-                effect = effect + (20 * sfx['volume'] - 10) 
-                voice = voice.overlay(effect, position=sfx['timestamp_ms'])
+                vol = sfx.get('volume', 0.5)
+                effect = effect + (20 * vol - 10) 
+                voice = voice.overlay(effect, position=sfx.get('timestamp_ms', 0))
         
         voice.export(output_path, format="mp3")
-        return True
+        return output_path
     except Exception as e:
         print(f"[SFX] Overlay error: {e}")
         import shutil
         shutil.copy2(audio_path, output_path)
-        return False
+        return output_path
