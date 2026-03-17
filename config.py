@@ -17,7 +17,7 @@ YOUTUBE_TOKEN_JSON = os.environ.get("YOUTUBE_TOKEN_JSON", "")
 
 # Channel Identity
 CHANNEL_NAME = "TheScienceOfYou"
-CHANNEL_HANDLE = "@TheScienceOfYou"
+CHANNEL_HANDLE = "@TheScienceOf-You"
 CHANNEL_SLOGAN = "Your body is talking. We translate."
 CHANNEL_URL = ""  # Fill after channel creation
 

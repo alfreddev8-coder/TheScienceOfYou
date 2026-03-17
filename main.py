@@ -223,19 +223,17 @@ def format_description(content, video_type="short", credits=None):
         f"{CHANNEL_HANDLE}\n\n"
         f"Educational purposes only. Consult doctor.\n"
         f"Robot voice generated. Original research and script.\n"
-        f"{{CREDITS_PLACEHOLDER}}\n\n"
-        f"{hashtags}\n\n"
-        f"[SEO TAGS]: {tags}"
     )
     
-    full_desc = fix_description(full_desc)
     if credits:
-        credits_text = f"\n background footage:\n" + "\n".join([f"   {c} (pexels)" for c in credits])
-        full_desc = full_desc.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
+        full_desc += f"\nbackground footage: " + ", ".join(credits) + "\n\n"
     else:
-        full_desc = full_desc.replace("{{CREDITS_PLACEHOLDER}}", "\n background: satisfying visuals")
+        full_desc += "\nbackground: satisfying visuals\n\n"
         
-    return full_desc
+    full_desc += f"{hashtags}\n\n"
+    full_desc += f"[TAGS]: {tags}"
+    
+    return fix_description(full_desc)
 
 
 def create_short(playlist: str = None):
@@ -288,6 +286,7 @@ def create_short(playlist: str = None):
         
     # Step 9: Assemble
     print("[9/12] Assembling 9:16 vertical video (120% zoom)...")
+    seo_filename = create_seo_filename(content.get("title", f"short_{int(time.time())}"))
     intermediate = "temp/intermediate_short.mp4"
     if not assemble_short(bg_path, final_audio, intermediate):
         print("[FATAL] Assembly failed")
