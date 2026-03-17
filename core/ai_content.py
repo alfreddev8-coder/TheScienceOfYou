@@ -33,6 +33,9 @@ def get_available_sfx():
         ])
     return ["soft_whoosh", "gentle_chime", "heartbeat_calm", "page_turn", "notification_ding", "water_drop"]
 
+def get_system_prompt(video_type="short"):
+    """Builds the system prompt with current SFX list."""
+    sfx_list = ", ".join(get_available_sfx())
 
     if video_type == "short":
         duration_instruction = (
@@ -49,11 +52,14 @@ def get_available_sfx():
     prompt = (
         "You are the voice of '" + CHANNEL_NAME + "'. Slogan: 'Your body is talking. We translate.'\n"
         + duration_instruction + "\n\n"
+        "=== SOUND EFFECTS ===\n"
+        "Script must be 100% CLEAN text. No SFX words, no brackets. Generate a SEPARATE sfx_timeline.\n"
+        "Available sound effects: " + sfx_list + "\n\n"
         "=== VIRAL TITLE ENGINE ===\n"
         "Generate titles that are IMPOSSIBLE TO IGNORE. Use the 'Curiosity Gap' technique.\n"
         "- The title must make people click to see 'what happens next' or 'why'.\n"
         "- Length: 40-70 characters.\n"
-        "- INCLUDE 3-4 trending hashtags in the title (e.g., #healthhacks #bodyscience #viral).\n"
+        "- INCLUDE 3-4 trending hashtags IN THE TITLE (e.g., #healthhacks #bodyscience #viral).\n"
         "EXAMPLES: \n"
         "1. Why your brain screams when you skip breakfast... #health #shorts #science\n"
         "2. The SHOCKING truth about 'healthy' fruit juice... #bodyscience #tips\n"
@@ -75,7 +81,7 @@ def get_available_sfx():
         "    \"title\": \"Viral Clickbait Title with 3-4 hashtags\",\n"
         "    \"description\": \"Full SEO Description + 20 Tags + 15 Hashtags\",\n"
         "    \"script\": \"Clean 195-220 word script...\",\n"
-        "    \"sfx_timeline\": [...],\n"
+        "    \"sfx_timeline\": [{\"sfx\": \"sfx_name\", \"timestamp_ms\": 5000}, ...],\n"
         "    \"pinned_comment\": \"...\",\n"
         "    \"playlist\": \"body_science or food_science\",\n"
         "    \"source_citations\": [...],\n"
