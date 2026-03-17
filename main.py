@@ -7,6 +7,8 @@ Daily: 5 Shorts + 2 Long-form
 
 import os
 import sys
+import time
+import gc
 
 # --- MONKEY PATCH FOR MOVIEPY PIL DEPENDENCY (Pillow >= 10) ---
 import PIL.Image
