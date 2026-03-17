@@ -8,22 +8,27 @@ env/
 venv/
 .env
 
-# Media/Data
+# Media/Build
 temp/
 output/
 kuaishou_bg_videos/
 tiktok_bg_videos/
 pexels_bg_clips/
-data/used_topics.json
-data/pending_series.json
 
-# Credentials & Tokens (DO NOT REMOVE)
+# Credentials & Tokens (DO NOT COMMIT)
 token.json
 client_secrets.json
 service_account.json
-.env
 auth_token.json
 credentials.json
+
+# Block all JSON by default, then explicitly allow needed ones
 *.json
 !data/questions_bank.json
+!data/sfx_manifest.json
+!data/video_database.json
+!data/used_topics.json
+!data/used_kuaishou_videos.json
+!data/used_music.json
+!data/pending_series.json
 !posted_videos.json

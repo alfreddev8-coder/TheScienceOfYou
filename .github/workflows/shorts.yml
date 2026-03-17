@@ -8,40 +8,53 @@ on:
 jobs:
   create-shorts:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    
+    timeout-minutes: 60
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: Install system deps
         run: |
-          sudo apt-get update
+          sudo apt-get update -qq
           sudo apt-get install -y ffmpeg imagemagick
           # Fix ImageMagick security policy for moviepy
           sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
-      
+
       - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Write token.json from secret
+        env:
+          YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
         run: |
-          pip install -r requirements.txt
-          pip install yt-dlp
-      
+          if [ -n "$YOUTUBE_TOKEN_JSON" ]; then
+            echo "$YOUTUBE_TOKEN_JSON" > token.json
+            echo "[Setup] token.json written"
+          else
+            echo "[Setup] WARNING: YOUTUBE_TOKEN_JSON secret not set"
+          fi
+
       - name: Create Shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
+          PLAYLIST_BODY_SCIENCE: ${{ secrets.PLAYLIST_BODY_SCIENCE }}
+          PLAYLIST_FOOD_SCIENCE: ${{ secrets.PLAYLIST_FOOD_SCIENCE }}
+          DRY_RUN: "false"
         run: python main.py batch_shorts
-      
+
       - name: Commit tracking files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          for f in data/used_topics.json data/used_kuaishou_videos.json data/used_music.json data/video_database.json data/sfx_manifest.json data/pending_series.json; do
-            if [ -f "$f" ]; then git add "$f"; fi
-          done
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update tracking [Shorts]"
+          git add -f data/used_topics.json data/used_kuaishou_videos.json data/used_music.json data/video_database.json || true
+          git diff --staged --quiet || git commit -m "chore: update tracking files [skip ci]"
           git push || echo "Nothing to push"
