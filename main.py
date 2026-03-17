@@ -84,7 +84,7 @@ from video.caption_burner import burn_animated_captions
 from video.thumbnail_generator import generate_thumbnail
 from upload.comment_bot import post_pinned_comment
 from upload.youtube_uploader import upload_video, set_thumbnail, authenticate_youtube
-from config import DRY_RUN, VOICEOVER_SPEED
+from config import DRY_RUN, VOICEOVER_SPEED, CHANNEL_NAME, CHANNEL_HANDLE
 
 
 def create_short(playlist: str = None):
