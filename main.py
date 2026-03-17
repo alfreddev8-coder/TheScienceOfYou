@@ -185,51 +185,37 @@ def create_short(playlist: str = None):
     print("[12/12] Checking duration...")
     ensure_shorts_duration(output_path, 58.0)
     
-    # Upload
-    if DRY_RUN:
-        print(f"[OFFLINE] DRY_RUN enabled. Skipping upload.")
-        print(f"  Final video saved at: {output_path}")
-        return True
-
-    # Upload
-    if DRY_RUN:
-        print(f"[OFFLINE] DRY_RUN enabled. Skipping upload.")
-        print(f"  Final video saved at: {output_path}")
-        return True
-
-    print("[UPLOAD] Uploading to YouTube...")
-    
-    # --- PROFESSIONAL SEO DESCRIPTION FORMATTING ---
+def format_description(content, video_type="short", credits=None):
+    """Formats a professional science report description with cross-linking."""
     problem = content.get("problem_box", "Every body is different, but the science is clear.")
     bullets = "\n".join([f"• {b}" for b in content.get("science_bullets", [])])
     action = content.get("actionable_tip", "Stay curious and stay healthy.")
     seo_body = content.get("description_seo_body", "")
     hashtags = content.get("hashtags", "#health #science #bodyscience")
     tags = content.get("tags", "")
+    playlist = content.get("playlist", "body_science")
     
-    # 1. Find related long-form link
-    related_link = "https://youtube.com/@TheScienceOfYou"
+    # Cross-linking logic
+    related_link = f"https://youtube.com/{CHANNEL_HANDLE}"
     try:
         if os.path.exists("data/video_database.json"):
             with open("data/video_database.json", "r") as f:
                 db = json.load(f)
-                # Find most recent long-form in same playlist
-                relevant = [v for v in db if v.get("playlist") == playlist and v.get("type") == "long"]
+                target_type = "long" if video_type == "short" else "short"
+                relevant = [v for v in db if v.get("playlist") == playlist and v.get("type") == target_type]
                 if relevant:
                     related_link = f"https://youtu.be/{relevant[0]['id']}"
-                elif any(v.get("type") == "long" for v in db):
-                    # Fallback to any long-form
-                    any_long = [v for v in db if v.get("type") == "long"]
-                    related_link = f"https://youtu.be/{any_long[0]['id']}"
-    except:
-        pass
+                elif any(v.get("type") == target_type for v in db):
+                    any_target = [v for v in db if v.get("type") == target_type]
+                    related_link = f"https://youtu.be/{any_target[0]['id']}"
+    except: pass
 
-    full_description = (
+    full_desc = (
         f"🚨 THE PROBLEM: {problem}\n\n"
         f"🔬 THE SCIENCE:\n{bullets}\n\n"
         f"✅ THE SOLUTION: {action}\n\n"
         f"🎓 EDUCATIONAL NOTES: {seo_body}\n\n"
-        f"📺 WATCH DEEP DIVE: {related_link}\n\n"
+        f"{'📺 WATCH DEEP DIVE:' if video_type == 'short' else '🎬 WATCH QUICK TIPS:'} {related_link}\n\n"
         f"------------------------------------------\n"
         f"science of your body every single day\n"
         f"{CHANNEL_HANDLE}\n\n"
@@ -239,13 +225,94 @@ def create_short(playlist: str = None):
         f"{hashtags}\n\n"
         f"[SEO TAGS]: {tags}"
     )
-
-    full_description = fix_description(full_description)
+    
+    full_desc = fix_description(full_desc)
     if credits:
-        credits_text = "\n background footage:\n" + "\n".join([f"   {c} (pexels)" for c in credits])
-        full_description = full_description.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
+        credits_text = f"\n background footage:\n" + "\n".join([f"   {c} (pexels)" for c in credits])
+        full_desc = full_desc.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
     else:
-        full_description = full_description.replace("{{CREDITS_PLACEHOLDER}}", f"\n background: satisfying visuals")
+        full_desc = full_desc.replace("{{CREDITS_PLACEHOLDER}}", "\n background: satisfying visuals")
+        
+    return full_desc
+
+
+def create_short(playlist: str = None):
+    """Creates and uploads ONE Short video."""
+    print(f"\n{'='*50}")
+    print(f"  TheScienceOfYou  Creating Short ({playlist or 'auto'})")
+    print(f"{'='*50}\n")
+    
+    # Step 1: Get topic
+    print("[1/12] Getting topic...")
+    topic_data = get_next_topic(playlist)
+    print(f"  Topic: {topic_data['topic'][:60]}...")
+    
+    # Step 2: Generate Content
+    print("[2/12] Generating AI script & Professional Metadata...")
+    content = generate_short_content(topic_data)
+    if not content:
+        print("[FATAL] Content generation failed")
+        return False
+        
+    # Step 3: TTS
+    print("[3/12] Generating voiceover...")
+    voiceover_raw, srt_path = generate_voiceover(content["script"], "temp/voiceover_raw.mp3")
+    if not voiceover_raw:
+        print("[FATAL] TTS failed")
+        return False
+    
+    # Step 4: Speed up
+    print(f"[4/12] Speeding up ({VOICEOVER_SPEED}x) & Scaling subtitles...")
+    fast_voice = speed_up_audio(voiceover_raw, VOICEOVER_SPEED, "temp/voiceover_fast.mp3", srt_path=srt_path)
+    
+    # Step 5: SFX overlay
+    print("[5/12] Overlaying SFX...")
+    sfx_voice = overlay_sfx_on_voice(fast_voice, content.get("sfx_timeline", []), "temp/voiceover_sfx.mp3")
+    
+    # Step 6: Background music
+    print("[6/12] Getting background music...")
+    music_path = get_background_music(playlist)
+    
+    # Step 7: Mix audio
+    print("[7/12] Mixing audio...")
+    final_audio = mix_final_audio(sfx_voice, music_path, playlist, "temp/final_audio_short.mp3")
+    
+    # Step 8: Visuals
+    print("[8/12] Getting satisfying background...")
+    bg_path = get_satisfying_background()
+    if not bg_path:
+        print("[FATAL] No background video found")
+        return False
+        
+    # Step 9: Assemble
+    print("[9/12] Assembling 9:16 vertical video (120% zoom)...")
+    intermediate = "temp/intermediate_short.mp4"
+    if not assemble_short(bg_path, final_audio, intermediate):
+        print("[FATAL] Assembly failed")
+        return False
+        
+    # Step 10: Effects
+    print("[10/12] Enhancing visuals + watermark...")
+    apply_visual_enhancements(intermediate)
+    add_watermark_ffmpeg(intermediate, CHANNEL_NAME, 0.1)
+    
+    # Step 11: Captions
+    print("[11/12] Burning yellow pop-in captions...")
+    output_path = f"output/short_{int(time.time())}.mp4"
+    burn_animated_captions(intermediate, srt_path, output_path)
+    
+    # Step 12: Cleanup & Duration Check
+    print("[12/12] Checking duration...")
+    ensure_shorts_duration(output_path, SHORTS_MAX_DURATION)
+    
+    # Upload
+    if DRY_RUN:
+        print(f"[OFFLINE] DRY_RUN enabled. Skipping upload.")
+        print(f"  Final video saved at: {output_path}")
+        return True
+
+    print("[UPLOAD] Uploading to YouTube...")
+    full_description = format_description(content, "short")
     
     youtube = authenticate_youtube()
     video_id = upload_video(youtube, output_path, content["title"], full_description, playlist_type=playlist, privacy="public")
@@ -352,12 +419,10 @@ def create_longform(playlist: str = None):
         return True
         
     print("[12/14] Uploading to YouTube...")
-    description = fix_description(content.get("description", ""))
-    if credits:
-        description += "\n\nFootage Credits:\n" + "\n".join([f"- {c} (pexels)" for c in credits])
+    full_description = format_description(content, "long", credits=credits)
         
     youtube = authenticate_youtube()
-    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="public")
+    video_id = upload_video(youtube, output_path, content["title"], full_description, playlist_type=playlist, privacy="public")
     
     # Step 13: Set Thumbnail
     if video_id and os.path.exists(thumb_path):
