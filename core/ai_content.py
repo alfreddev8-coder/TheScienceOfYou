@@ -81,6 +81,7 @@ def get_system_prompt(video_type="short"):
         "    \"tags\": \"tag1, tag2, tag3... (20 viral keywords)\",\n"
         "    \"hashtags\": \"#h1 #h2 #h3... (15 hashtags)\",\n"
         "    \"sfx_timeline\": [{\"sound\": \"sfx_name\", \"timestamp_ms\": 5000}, ...],\n"
+        "    \"pexels_keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],\n"
         "    \"pinned_comment\": \"Engagement question...\",\n"
         "    \"playlist\": \"body_science or food_science\",\n"
         "    \"source_citations\": [...],\n"

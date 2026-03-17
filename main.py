@@ -370,8 +370,13 @@ def create_longform(playlist: str = None):
     
     # Step 6: Background clips (Pexels)
     print("[6/14] Getting Pexels background clips...")
+    search_terms = content.get("pexels_keywords", [])
+    if not search_terms:
+        # Fallback to title keywords
+        search_terms = content.get("title", "").split()[:5]
+        
     try:
-        clips, credits = get_longform_background_clips(content["script"])
+        clips, credits = get_longform_background_clips(search_terms)
     except Exception as e:
         print(f"  [Error] Pexels clips failed: {e}")
         clips, credits = [], []

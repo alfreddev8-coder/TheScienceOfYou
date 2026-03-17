@@ -115,12 +115,20 @@ def download_pexels_clip(url: str, output_path: str) -> bool:
         return False
 
 
-def get_longform_background_clips(keywords: list, clips_per_keyword: int = 4) -> tuple:
+def get_longform_background_clips(keywords, clips_per_keyword: int = 4) -> tuple:
     """
     Downloads multiple clips from Pexels for long-form video.
     Returns (list of filepaths, list of credits).
     """
     os.makedirs(PEXELS_DIR, exist_ok=True)
+    
+    # Safety: If keywords is a string (accidental pass of script), extract keywords
+    if isinstance(keywords, str):
+        print("[Pexels] Warning: keywords passed as string. Extracting...")
+        # Split by non-alphanumeric, filter for 4+ char words
+        keywords = [w for w in re.split(r'\W+', keywords) if len(w) > 4]
+        # Take first 8 keywords to avoid infinite loops
+        keywords = keywords[:8]
     
     downloaded_clips = []
     credits = []
