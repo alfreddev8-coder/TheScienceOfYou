@@ -1,5 +1,5 @@
 """
-Caption Burner — TheScienceOfYou
+Caption Burner  TheScienceOfYou
 Creates Facts Man style captions: YELLOW, BOLD, CENTERED, POP-IN animation.
 Converts SRT to ASS with word-by-word pop animation and color-coded keywords.
 """
@@ -32,7 +32,7 @@ def srt_to_animated_ass(srt_path: str, ass_path: str) -> bool:
         if not entries:
             return False
         
-        # ASS header — YELLOW text, centered, large, bold
+        # ASS header  YELLOW text, centered, large, bold
         ass_header = """[Script Info]
 Title: TheScienceOfYou Captions
 ScriptType: v4.00+
@@ -75,20 +75,20 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         return True
         
     except Exception as e:
-        print(f"[Captions] SRT→ASS error: {e}")
+        print(f"[Captions] SRTASS error: {e}")
         return False
 
 
 def color_code_health_keywords(text: str) -> str:
     """Color-codes health-specific keywords in ASS format."""
-    # Numbers and percentages → GREEN
+    # Numbers and percentages  GREEN
     text = re.sub(
         r'\b(\d+(?:\.\d+)?)\s*(percent|%|times|hours|minutes|seconds|years|days|weeks|months|liters|grams|mg|calories)\b',
         r'{\\c&H0000FF00&}\1 \2{\\c&H0000FFFF&}',
         text, flags=re.IGNORECASE
     )
     
-    # Body parts → LIGHT BLUE
+    # Body parts  LIGHT BLUE
     organs = ['brain', 'heart', 'liver', 'kidney', 'stomach', 'lungs', 'skin',
               'bones', 'muscles', 'blood', 'cells', 'neurons', 'gut', 'immune',
               'intestine', 'spine', 'eyes', 'ears', 'throat', 'arteries']
@@ -96,7 +96,7 @@ def color_code_health_keywords(text: str) -> str:
         pattern = re.compile(rf'\b({organ}s?)\b', re.IGNORECASE)
         text = pattern.sub(r'{\\c&H00FFD700&}\1{\\c&H0000FFFF&}', text)
     
-    # Food names → ORANGE
+    # Food names  ORANGE
     foods = ['coffee', 'sugar', 'water', 'garlic', 'honey', 'rice', 'bread',
              'eggs', 'milk', 'fruit', 'vegetables', 'protein', 'fiber',
              'chocolate', 'tea', 'avocado', 'banana', 'ginger', 'turmeric']

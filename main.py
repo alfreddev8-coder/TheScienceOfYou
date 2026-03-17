@@ -1,5 +1,5 @@
 """
-TheScienceOfYou — Main Automation Pipeline
+TheScienceOfYou  Main Automation Pipeline
 Health Science YouTube Channel
 
 Daily: 5 Shorts + 2 Long-form
@@ -90,7 +90,7 @@ from config import DRY_RUN, VOICEOVER_SPEED
 def create_short(playlist: str = None):
     """Creates and uploads ONE Short video."""
     print(f"\n{'='*50}")
-    print(f"  TheScienceOfYou — Creating Short ({playlist or 'auto'})")
+    print(f"  TheScienceOfYou  Creating Short ({playlist or 'auto'})")
     print(f"{'='*50}\n")
     
     # Step 1: Get topic
@@ -194,10 +194,10 @@ def create_short(playlist: str = None):
     print("[UPLOAD] Uploading to YouTube...")
     description = fix_description(content.get("description", ""))
     if credits:
-        credits_text = "\n🎬 background footage:\n" + "\n".join([f"  • {c} (pexels)" for c in credits])
+        credits_text = "\n background footage:\n" + "\n".join([f"   {c} (pexels)" for c in credits])
         description = description.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
     else:
-        description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n🎬 background: satisfying visuals")
+        description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n background: satisfying visuals")
     
     youtube = authenticate_youtube()
     video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="private")
@@ -220,7 +220,7 @@ def create_short(playlist: str = None):
 def create_longform(playlist: str = None):
     """Creates and uploads ONE long-form video."""
     print(f"\n{'='*50}")
-    print(f"  TheScienceOfYou — Creating Long-form ({playlist or 'auto'})")
+    print(f"  TheScienceOfYou  Creating Long-form ({playlist or 'auto'})")
     print(f"{'='*50}\n")
     
     topic_data = get_next_topic(playlist)
@@ -233,7 +233,7 @@ def create_longform(playlist: str = None):
     return True
 
 
-# ─── ENTRY POINT ───
+#  ENTRY POINT 
 if __name__ == "__main__":
     v_type = sys.argv[1] if len(sys.argv) > 1 else "short"
     pl = sys.argv[2] if len(sys.argv) > 2 else None

@@ -1,5 +1,5 @@
 """
-TTS Manager — TheScienceOfYou
+TTS Manager  TheScienceOfYou
 Generates high-quality voiceovers using edge-tts.
 Synchronizes subtitles into .srt format.
 """

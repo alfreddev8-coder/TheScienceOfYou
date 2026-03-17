@@ -1,5 +1,5 @@
 """
-Satisfying Background Video Source — TheScienceOfYou
+Satisfying Background Video Source  TheScienceOfYou
 Downloads satisfying clips from TikTok accounts that post
 clean satisfying content (no text overlays, no captions).
 
@@ -20,11 +20,11 @@ from core.utils import get_ytdlp_cmd
 BG_DIR = "satisfying_bg_videos"
 USED_BG_FILE = "data/used_bg_videos.json"
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TIKTOK ACCOUNTS WITH CLEAN SATISFYING CONTENT (NO TEXT)
 #  These accounts post pure visual satisfying content
 #  Add more accounts as you find them
-# ─────────────────────────────────────────────────────────────────
+# 
 SATISFYING_TIKTOK_ACCOUNTS = [
     "kirkmaxson",
     "watchlike87",

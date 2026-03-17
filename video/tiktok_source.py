@@ -1,5 +1,5 @@
 """
-TikTok Background Video Source — TheScienceOfYou
+TikTok Background Video Source  TheScienceOfYou
 Downloads satisfying clips from TikTok for Shorts backgrounds using yt-dlp library.
 """
 

@@ -1,5 +1,5 @@
 """
-Pexels Video Source — TheScienceOfYou
+Pexels Video Source  TheScienceOfYou
 Downloads topic-matched stock footage from Pexels for long-form videos.
 Multiple clips per video, matched to script content.
 """

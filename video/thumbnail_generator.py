@@ -1,5 +1,5 @@
 """
-Thumbnail Generator — TheScienceOfYou
+Thumbnail Generator  TheScienceOfYou
 Auto-generates clickable thumbnails for long-form videos.
 """
 
@@ -12,14 +12,14 @@ def generate_thumbnail(video_path: str, hook_text: str, subtitle: str = "",
                        output_path: str = "thumbnail.jpg", timestamp: float = 5.0) -> bool:
     """
     Generates a thumbnail from the video with text overlay.
-    1280x720 JPG — YouTube standard.
+    1280x720 JPG  YouTube standard.
     """
     try:
         # Clean text for FFmpeg
         hook_clean = re.sub(r"['\"]", "", hook_text).upper()[:40]
         sub_clean = re.sub(r"['\"]", "", subtitle).lower()[:50] if subtitle else ""
         
-        # Build filter — frame + text + color grade
+        # Build filter  frame + text + color grade
         filters = (
             f"scale=1280:720,"
             f"eq=brightness=0.05:contrast=1.25:saturation=1.3,"

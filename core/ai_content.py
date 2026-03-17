@@ -401,7 +401,7 @@ def fix_description(description: str) -> str:
     """Fixes line breaks in description."""
     if not description:
         return description
-    markers = ["🔔", "⚠️", "🤖", "📚", "💡", "💬", "📺", "🎬", "📌",
+    markers = ["", "", "", "", "", "", "", "", "",
                "{{CREDITS_PLACEHOLDER}}", "we share the science"]
     for m in markers:
         if m in description:

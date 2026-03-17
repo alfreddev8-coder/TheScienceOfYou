@@ -1,5 +1,5 @@
 """
-TheScienceOfYou — Local Testing Tool
+TheScienceOfYou  Local Testing Tool
 Run this to verify everything works on your PC before going live.
 """
 

@@ -1,5 +1,5 @@
 """
-Google Sheets Integration — TheScienceOfYou
+Google Sheets Integration  TheScienceOfYou
 Fetches topics from a Google Sheet.
 """
 

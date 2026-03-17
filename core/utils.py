@@ -1,5 +1,5 @@
 """
-Shared Utilities — TheScienceOfYou
+Shared Utilities  TheScienceOfYou
 """
 
 import sys

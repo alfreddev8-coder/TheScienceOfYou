@@ -1,5 +1,5 @@
 """
-Music Manager — TheScienceOfYou
+Music Manager  TheScienceOfYou
 Retrieves background music.
 """
 

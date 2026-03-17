@@ -1,5 +1,5 @@
 """
-Video Assembler — TheScienceOfYou
+Video Assembler  TheScienceOfYou
 Assembles vertical 9:16 videos for Shorts (single clip)
 and horizontal/vertical for Long-form (multiple clips).
 """
@@ -176,7 +176,7 @@ def apply_visual_enhancements(video_path: str) -> bool:
     """Applies warm bright color grading for health content."""
     output = video_path.replace(".mp4", "_enhanced.mp4")
     try:
-        # Warm, bright, slightly saturated — opposite of dark psychology
+        # Warm, bright, slightly saturated  opposite of dark psychology
         cmd = [
             "ffmpeg", "-i", video_path,
             "-vf", "eq=brightness=0.04:contrast=1.12:saturation=1.08,vignette=PI/5,unsharp=3:3:0.3:3:3:0.0",
@@ -202,7 +202,7 @@ def ensure_shorts_duration(video_path: str, max_dur: float = 58.0) -> str:
         if v.duration <= max_dur:
             v.close()
             return video_path
-        print(f"[Duration] {v.duration:.1f}s → trimming to {max_dur}s")
+        print(f"[Duration] {v.duration:.1f}s  trimming to {max_dur}s")
         trimmed = video_path.replace(".mp4", "_trim.mp4")
         t = v.subclip(0, max_dur)
         t.write_videofile(trimmed, codec="libx264", audio_codec="aac",

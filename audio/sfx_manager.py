@@ -1,5 +1,5 @@
 """
-SFX Manager — TheScienceOfYou
+SFX Manager  TheScienceOfYou
 Manages SFX timestamps and overlays.
 """
 

@@ -1,5 +1,5 @@
 """
-Audio Mixer — TheScienceOfYou
+Audio Mixer  TheScienceOfYou
 Mixes voice, music, and SFX.
 """
 

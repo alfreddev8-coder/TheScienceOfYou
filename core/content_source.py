@@ -1,7 +1,7 @@
 """
-Content Source — TheScienceOfYou
+Content Source  TheScienceOfYou
 Provides topics from multiple sources with fallback chain.
-Priority: Question Bank → Google Trends → RSS Feeds → AI Generated
+Priority: Question Bank  Google Trends  RSS Feeds  AI Generated
 """
 
 import os
@@ -19,9 +19,9 @@ from core.google_sheets import get_topics_from_sheet, mark_sheet_topic_used
 QUESTIONS_BANK_FILE = "data/questions_bank.json"
 USED_TOPICS_FILE = "data/used_topics.json"
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TOPIC TRACKING
-# ─────────────────────────────────────────────────────────────────
+# 
 def is_health_related(topic_text: str) -> bool:
     """Checks if a topic is actually health/body/food related."""
     health_keywords = [
@@ -71,9 +71,9 @@ def save_used_topic(topic: str, source: str = "bank"):
     with open(USED_TOPICS_FILE, "w") as f:
         json.dump(used, f, indent=2)
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TIER 1: QUESTION BANK (Most Reliable)
-# ─────────────────────────────────────────────────────────────────
+# 
 def get_topic_from_bank(playlist: str = None) -> dict | None:
     """
     Gets unused topic from pre-curated question bank.
@@ -106,7 +106,7 @@ def get_topic_from_bank(playlist: str = None) -> dict | None:
         non_bank_used = [u for u in used if u.get("source") != "bank"]
         with open(USED_TOPICS_FILE, "w") as f:
             json.dump(non_bank_used, f, indent=2)
-        print("[Source] Reset bank usage — recycling topics")
+        print("[Source] Reset bank usage  recycling topics")
         # Try again after reset
         available = bank if not playlist else [t for t in bank if t.get("playlist") == playlist]
     
@@ -119,9 +119,9 @@ def get_topic_from_bank(playlist: str = None) -> dict | None:
     print(f"[Source] Bank topic: '{chosen['topic'][:60]}...' ({chosen.get('playlist', 'general')})")
     return chosen
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TIER 2: GOOGLE TRENDS (Trending Topics)
-# ─────────────────────────────────────────────────────────────────
+# 
 def get_trending_health_topic() -> dict | None:
     """Gets trending health topic using pytrends with strict filtering."""
     try:
@@ -211,9 +211,9 @@ def get_trending_health_topic() -> dict | None:
             print(f"[Source] Google Trends error: {e}")
         return None
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TIER 3: RSS HEALTH NEWS (Latest Studies)
-# ─────────────────────────────────────────────────────────────────
+# 
 RSS_FEEDS = [
     {
         "name": "ScienceDaily Health",
@@ -401,9 +401,9 @@ def get_quora_health_topic() -> dict | None:
         print(f"[Source] Quora error: {e}")
         return None
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TIER 4: AI GENERATED (Ultimate Fallback)
-# ─────────────────────────────────────────────────────────────────
+# 
 def generate_ai_topic(playlist: str = None) -> dict | None:
     """Uses AI to generate a fresh health topic when all sources fail."""
     try:
@@ -469,9 +469,9 @@ def generate_ai_topic(playlist: str = None) -> dict | None:
         print(f"[Source] AI topic error: {e}")
         return None
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  TOPIC CATEGORIZER
-# ─────────────────────────────────────────────────────────────────
+# 
 def categorize_topic(topic: str) -> str:
     """Categorizes a topic as body_science or food_science."""
     topic_lower = topic.lower()
@@ -494,13 +494,13 @@ def categorize_topic(topic: str) -> str:
     else:
         return "body_science"
 
-# ─────────────────────────────────────────────────────────────────
+# 
 #  MAIN: GET NEXT TOPIC (Fallback Chain)
-# ─────────────────────────────────────────────────────────────────
+# 
 def get_next_topic(playlist: str = None) -> dict:
     """
     Fallback chain:
-    Bank/Sheets → Google Trends → Quora → RSS → AI Generated
+    Bank/Sheets  Google Trends  Quora  RSS  AI Generated
     """
     # Tier 0: Google Sheets (Highest Priority)
     try:
