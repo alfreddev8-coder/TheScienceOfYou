@@ -191,16 +191,64 @@ def create_short(playlist: str = None):
         print(f"  Final video saved at: {output_path}")
         return True
 
+    # Upload
+    if DRY_RUN:
+        print(f"[OFFLINE] DRY_RUN enabled. Skipping upload.")
+        print(f"  Final video saved at: {output_path}")
+        return True
+
     print("[UPLOAD] Uploading to YouTube...")
-    description = fix_description(content.get("description", ""))
+    
+    # --- PROFESSIONAL SEO DESCRIPTION FORMATTING ---
+    problem = content.get("problem_box", "Every body is different, but the science is clear.")
+    bullets = "\n".join([f"• {b}" for b in content.get("science_bullets", [])])
+    action = content.get("actionable_tip", "Stay curious and stay healthy.")
+    seo_body = content.get("description_seo_body", "")
+    hashtags = content.get("hashtags", "#health #science #bodyscience")
+    tags = content.get("tags", "")
+    
+    # 1. Find related long-form link
+    related_link = "https://youtube.com/@TheScienceOfYou"
+    try:
+        if os.path.exists("data/video_database.json"):
+            with open("data/video_database.json", "r") as f:
+                db = json.load(f)
+                # Find most recent long-form in same playlist
+                relevant = [v for v in db if v.get("playlist") == playlist and v.get("type") == "long"]
+                if relevant:
+                    related_link = f"https://youtu.be/{relevant[0]['id']}"
+                elif any(v.get("type") == "long" for v in db):
+                    # Fallback to any long-form
+                    any_long = [v for v in db if v.get("type") == "long"]
+                    related_link = f"https://youtu.be/{any_long[0]['id']}"
+    except:
+        pass
+
+    full_description = (
+        f"🚨 THE PROBLEM: {problem}\n\n"
+        f"🔬 THE SCIENCE:\n{bullets}\n\n"
+        f"✅ THE SOLUTION: {action}\n\n"
+        f"🎓 EDUCATIONAL NOTES: {seo_body}\n\n"
+        f"📺 WATCH DEEP DIVE: {related_link}\n\n"
+        f"------------------------------------------\n"
+        f"science of your body every single day\n"
+        f"{CHANNEL_HANDLE}\n\n"
+        f"Educational purposes only. Consult doctor.\n"
+        f"Robot voice generated. Original research and script.\n"
+        f"{{CREDITS_PLACEHOLDER}}\n\n"
+        f"{hashtags}\n\n"
+        f"[SEO TAGS]: {tags}"
+    )
+
+    full_description = fix_description(full_description)
     if credits:
         credits_text = "\n background footage:\n" + "\n".join([f"   {c} (pexels)" for c in credits])
-        description = description.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
+        full_description = full_description.replace("{{CREDITS_PLACEHOLDER}}", credits_text)
     else:
-        description = description.replace("{{CREDITS_PLACEHOLDER}}", f"\n background: satisfying visuals")
+        full_description = full_description.replace("{{CREDITS_PLACEHOLDER}}", f"\n background: satisfying visuals")
     
     youtube = authenticate_youtube()
-    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist, privacy="public")
+    video_id = upload_video(youtube, output_path, content["title"], full_description, playlist_type=playlist, privacy="public")
     pinned = content.get("pinned_comment")
     post_pinned_comment(youtube, video_id, pinned)
     
