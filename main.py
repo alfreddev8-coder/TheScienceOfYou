@@ -267,7 +267,7 @@ def create_short(playlist: str = None):
     
     # Step 5: SFX overlay
     print("[5/12] Overlaying SFX...")
-    sfx_voice = overlay_sfx_on_voice(fast_voice, content.get("sfx_timeline", []), "temp/voiceover_sfx.mp3")
+    sfx_voice = overlay_sfx_on_audio(fast_voice, content.get("sfx_timeline", []), "temp/voiceover_sfx.mp3")
     
     # Step 6: Background music
     print("[6/12] Getting background music...")
