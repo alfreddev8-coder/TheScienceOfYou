@@ -223,13 +223,112 @@ def create_longform(playlist: str = None):
     print(f"  TheScienceOfYou  Creating Long-form ({playlist or 'auto'})")
     print(f"{'='*50}\n")
     
+    # Step 1: Get topic
+    print("[1/14] Getting topic...")
     topic_data = get_next_topic(playlist)
+    print(f"  Topic: {topic_data['topic'][:60]}...")
+    
+    # Step 2: Generate AI content
+    print("[2/14] Generating AI script (long-form)...")
     content = generate_longform_content(topic_data)
     if not content:
+        print("[FATAL] Content generation failed")
         return False
+    print(f"  Title: {content.get('title', 'N/A')}")
+    print(f"  Words: {len(content.get('script', '').split())}")
     
-    # Logic similar to Short but with multiple clips and long-form assembly
-    print("[Longform] Implementation follows Short flow with multi-clip assembly")
+    # Step 3: TTS voiceover
+    print("[3/14] Generating voiceover...")
+    voice_path, srt_path = generate_voiceover(content["script"], "temp/longform_voiceover.mp3")
+    if not voice_path:
+        return False
+        
+    # Step 4: Background music
+    print("[4/14] Getting background music...")
+    music_path = get_background_music()
+    
+    # Step 5: Mix audio
+    print("[5/14] Mixing final audio...")
+    final_audio = mix_final_audio(voice_path, music_path, None, "temp/longform_final_audio.mp3")
+    
+    # Step 6: Background clips (Pexels)
+    print("[6/14] Getting Pexels background clips...")
+    try:
+        clips, credits = get_longform_background_clips(content["script"])
+    except Exception as e:
+        print(f"  [Error] Pexels clips failed: {e}")
+        clips, credits = [], []
+        
+    if not clips:
+        print("  [Warning] No specialized clips found, using satisfying fallback...")
+        try:
+            bg_path = get_satisfying_background()
+            if bg_path: clips = [bg_path]
+        except Exception:
+            pass
+            
+    if not clips:
+        print("[FATAL] No video clips available")
+        return False
+        
+    # Step 7: Assemble long-form video
+    print("[7/14] Assembling 16:9 horizontal video...")
+    seo_filename = create_seo_filename(content.get("title", "health-science-deepdive"))
+    output_path = f"output/{seo_filename}"
+    intermediate = "temp/longform_intermediate.mp4"
+    
+    if not assemble_longform(clips, final_audio, intermediate):
+        print("[FATAL] Assembly failed")
+        return False
+        
+    # Step 8: Visual enhancements
+    print("[8/14] Enhancing visuals...")
+    apply_visual_enhancements(intermediate)
+    
+    # Step 9: Watermark
+    print("[9/14] Adding watermark...")
+    add_watermark_ffmpeg(intermediate, "TheScienceOfYou", 0.15)
+    
+    # Step 10: Burn captions (optional for long-form, but good for engagement)
+    print("[10/14] Burning captions...")
+    burn_animated_captions(intermediate, srt_path, output_path)
+    
+    # Step 11: Generate Thumbnail
+    print("[11/14] Generating thumbnail...")
+    thumb_path = f"output/{seo_filename.replace('.mp4', '.jpg')}"
+    generate_thumbnail(output_path, content.get("title", ""), content.get("hook", ""), thumb_path)
+    
+    # Step 12: Upload
+    if DRY_RUN:
+        print(f"[OFFLINE] DRY_RUN enabled. Saved at: {output_path}")
+        return True
+        
+    print("[12/14] Uploading to YouTube...")
+    description = fix_description(content.get("description", ""))
+    if credits:
+        description += "\n\nFootage Credits:\n" + "\n".join([f"- {c} (pexels)" for c in credits])
+        
+    youtube = authenticate_youtube()
+    video_id = upload_video(youtube, output_path, content["title"], description, playlist_type=playlist)
+    
+    # Step 13: Set Thumbnail
+    if video_id and os.path.exists(thumb_path):
+        print("[13/14] Setting thumbnail...")
+        set_thumbnail(youtube, video_id, thumb_path)
+        
+    # Step 14: Pinned Comment
+    if video_id:
+        print("[14/14] Posting pinned comment...")
+        pinned = content.get("pinned_comment")
+        post_pinned_comment(youtube, video_id, pinned)
+        
+    # Cleanup
+    cleanup_pexels_clips(5)
+    for f in ["temp/longform_voiceover.mp3", "temp/longform_final_audio.mp3", 
+              "temp/longform_intermediate.mp4", "temp/longform_voiceover.srt"]:
+        if os.path.exists(f): os.remove(f)
+        
+    print(f"\n[DONE] Long-form created: {seo_filename}")
     return True
 
 

@@ -1,44 +1,73 @@
 name: TheScienceOfYou Long-form
 on:
   schedule:
-    - cron: '0 16 * * *'  # 4 PM UTC daily
+    - cron: '0 15 * * *'  # 10 AM EST -> Body Science
+    - cron: '0 22 * * *'  # 5 PM EST -> Food Science
   workflow_dispatch:
+    inputs:
+      playlist:
+        description: 'Playlist to target'
+        required: false
+        default: ''
 
 jobs:
   create-longform:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: Install system deps
         run: |
-          sudo apt-get update
+          sudo apt-get update -qq
           sudo apt-get install -y ffmpeg imagemagick
-      
+          sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
+
       - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Write token.json from secret
+        env:
+          YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
         run: |
-          pip install -r requirements.txt
-          pip install yt-dlp
-      
-      - name: Create Long-form Videos
+          if [ -n "$YOUTUBE_TOKEN_JSON" ]; then
+            echo "$YOUTUBE_TOKEN_JSON" > token.json
+          else
+            echo "[Setup] ERROR: YOUTUBE_TOKEN_JSON secret missing"
+            exit 1
+          fi
+
+      - name: Create Longform
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
-        run: python main.py batch_long
-      
+          DRY_RUN: "false"
+        run: |
+          PL="${{ github.event.inputs.playlist }}"
+          if [ -z "$PL" ]; then
+            HOUR=$(date +%H)
+            if [ "$HOUR" == "22" ]; then
+              PL="food_science"
+            else
+              PL="body_science"
+            fi
+          fi
+          echo "[Action] Target playlist: $PL"
+          python main.py long $PL
+
       - name: Commit tracking files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          for f in data/used_topics.json data/used_kuaishou_videos.json data/used_music.json data/video_database.json data/sfx_manifest.json; do
-            if [ -f "$f" ]; then git add "$f"; fi
-          done
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update tracking [Longform]"
+          git add -f data/used_topics.json data/used_kuaishou_videos.json data/used_music.json data/video_database.json || true
+          git diff --staged --quiet || git commit -m "chore: update tracking files [skip ci]"
           git push || echo "Nothing to push"
