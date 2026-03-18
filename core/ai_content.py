@@ -200,6 +200,9 @@ def generate_short_content(topic_data):
 
         result["channel"] = CHANNEL_NAME
         result["video_type"] = "short"
+        # Ensure pexels_keywords exists for Shorts too
+        if "pexels_keywords" not in result:
+            result["pexels_keywords"] = [w for w in re.split(r'\W+', result.get("title", "")) if len(w) > 3][:5]
 
         return result
 

@@ -221,14 +221,10 @@ def format_description(content, video_type="short", credits=None):
         f"------------------------------------------\n"
         f"science of your body every single day\n"
         f"{CHANNEL_HANDLE}\n\n"
-        f"Educational purposes only. Consult doctor.\n"
-        f"Robot voice generated. Original research and script.\n"
     )
     
     if credits:
-        full_desc += f"\nbackground footage: " + ", ".join(credits) + "\n\n"
-    else:
-        full_desc += "\nbackground: satisfying visuals\n\n"
+        full_desc += f"background footage: " + ", ".join(credits) + "\n\n"
         
     full_desc += f"{hashtags}\n\n"
     full_desc += f"[TAGS]: {tags}"
@@ -277,10 +273,29 @@ def create_short(playlist: str = None):
     print("[7/12] Mixing audio...")
     final_audio = mix_final_audio(sfx_voice, music_path, playlist, "temp/final_audio_short.mp3")
     
-    # Step 8: Visuals
-    print("[8/12] Getting satisfying background...")
-    bg_path = get_satisfying_background()
-    if not bg_path:
+    # Step 8: Visuals (Pexels Matching)
+    print("[8/12] Getting Pexels background clips (portrait)...")
+    search_terms = content.get("pexels_keywords", [])
+    if not search_terms:
+        # Fallback to title keywords if none provided
+        search_terms = content.get("title", "").split()[:3]
+        
+    try:
+        # Use bulk downloader in portrait mode for Shorts
+        bg_clips, credits = get_longform_background_clips(search_terms, clips_per_keyword=2, orientation="portrait")
+    except Exception as e:
+        print(f"  [Error] Pexels failed: {e}")
+        bg_clips, credits = [], []
+        
+    if not bg_clips:
+        print("  [Warning] No specialized clips found, using satisfying fallback...")
+        try:
+            bg_path = get_satisfying_background()
+            bg_clips = [bg_path] if bg_path else []
+        except Exception:
+            bg_clips = []
+            
+    if not bg_clips:
         print("[FATAL] No background video found")
         return False
         
@@ -288,7 +303,7 @@ def create_short(playlist: str = None):
     print("[9/12] Assembling 9:16 vertical video (120% zoom)...")
     seo_filename = create_seo_filename(content.get("title", f"short_{int(time.time())}"))
     intermediate = "temp/intermediate_short.mp4"
-    if not assemble_short(bg_path, final_audio, intermediate):
+    if not assemble_short(bg_clips[0] if isinstance(bg_clips, list) else bg_clips, final_audio, intermediate):
         print("[FATAL] Assembly failed")
         return False
         
@@ -313,7 +328,7 @@ def create_short(playlist: str = None):
         return True
 
     print("[UPLOAD] Uploading to YouTube...")
-    full_description = format_description(content, "short")
+    full_description = format_description(content, "short", credits=credits)
     
     youtube = authenticate_youtube()
     video_id = upload_video(youtube, output_path, content["title"], full_description, playlist_type=playlist, privacy="public")

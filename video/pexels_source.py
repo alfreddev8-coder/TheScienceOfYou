@@ -115,9 +115,9 @@ def download_pexels_clip(url: str, output_path: str) -> bool:
         return False
 
 
-def get_longform_background_clips(keywords, clips_per_keyword: int = 4) -> tuple:
+def get_longform_background_clips(keywords, clips_per_keyword: int = 4, orientation: str = "landscape") -> tuple:
     """
-    Downloads multiple clips from Pexels for long-form video.
+    Downloads multiple clips from Pexels/Pixabay.
     Returns (list of filepaths, list of credits).
     """
     os.makedirs(PEXELS_DIR, exist_ok=True)
@@ -134,8 +134,8 @@ def get_longform_background_clips(keywords, clips_per_keyword: int = 4) -> tuple
     credits = []
     
     for keyword in keywords:
-        print(f"[Pexels] Searching: {keyword}")
-        results = search_pexels_videos(keyword, per_page=clips_per_keyword)
+        print(f"[Pexels] Searching ({orientation}): {keyword}")
+        results = search_pexels_videos(keyword, per_page=clips_per_keyword, orientation=orientation)
         
         for i, result in enumerate(results[:clips_per_keyword]):
             clip_id = result.get("id", str(random.randint(10000, 99999)))
